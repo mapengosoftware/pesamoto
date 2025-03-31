@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+// Import IERC20 interface
+interface IERC20 {
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+}
+
+contract Qpesa {
+    IERC20 public usdt;
+    address public owner;
+    address public adminWallet;
+
+    constructor(address _usdt, address _adminWallet) {
+        usdt = IERC20(_usdt);
+        owner = msg.sender;
+        adminWallet = _adminWallet;
+    }
+
+    function sendWithFee(address recipient, uint256 amount) public {
+        uint256 fee = amount * 1 / 100;  // 1% fee
+        uint256 amountAfterFee = amount - fee;
+
+        // Send fee to admin wallet
+        require(usdt.transferFrom(msg.sender, adminWallet, fee), "Fee transfer failed");
+
+        // Send remaining amount to recipient
+        require(usdt.transferFrom(msg.sender, recipient, amountAfterFee), "Transfer failed");
+    }
+}
